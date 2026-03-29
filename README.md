@@ -52,3 +52,4 @@ cd frontend && npm install && npm run dev
 # E2E tests (requires Docker)
 docker compose --profile test up
 ```
+# finally

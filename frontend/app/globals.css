@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply bg-background text-text-primary font-mono;
+    font-size: 13px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0d1117;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a4a;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a3a5a;
+  }
+}
+
+@layer utilities {
+  .price-flash-up {
+    animation: flashUp 500ms ease-out forwards;
+  }
+
+  .price-flash-down {
+    animation: flashDown 500ms ease-out forwards;
+  }
+
+  @keyframes flashUp {
+    0% { background-color: rgba(34, 197, 94, 0.35); }
+    100% { background-color: transparent; }
+  }
+
+  @keyframes flashDown {
+    0% { background-color: rgba(239, 68, 68, 0.35); }
+    100% { background-color: transparent; }
+  }
+}

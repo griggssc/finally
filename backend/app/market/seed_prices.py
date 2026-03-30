@@ -44,4 +44,8 @@ CORRELATION_GROUPS: dict[str, set[str]] = {
 INTRA_TECH_CORR = 0.6  # Tech stocks move together
 INTRA_FINANCE_CORR = 0.5  # Finance stocks move together
 CROSS_GROUP_CORR = 0.3  # Between sectors / unknown tickers
-TSLA_CORR = 0.3  # TSLA does its own thing
+# TSLA is intentionally handled as a special case in _pairwise_correlation,
+# checked before the sector groups. Although TSLA_CORR == CROSS_GROUP_CORR == 0.3,
+# the separate constant documents intent: TSLA is treated as an independent,
+# high-volatility outlier regardless of which tickers it is paired with.
+TSLA_CORR = 0.3

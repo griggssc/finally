@@ -69,7 +69,8 @@ class MassiveDataSource(MarketDataSource):
         ticker = ticker.upper().strip()
         if ticker not in self._tickers:
             self._tickers.append(ticker)
-            logger.info("Massive: added ticker %s (will appear on next poll)", ticker)
+            await self._poll_once(tickers=[ticker])  # seed cache immediately
+            logger.info("Massive: added ticker %s", ticker)
 
     async def remove_ticker(self, ticker: str) -> None:
         ticker = ticker.upper().strip()
@@ -88,15 +89,21 @@ class MassiveDataSource(MarketDataSource):
             await asyncio.sleep(self._interval)
             await self._poll_once()
 
-    async def _poll_once(self) -> None:
-        """Execute one poll cycle: fetch snapshots, update cache."""
-        if not self._tickers or not self._client:
+    async def _poll_once(self, tickers: list[str] | None = None) -> None:
+        """Execute one poll cycle: fetch snapshots, update cache.
+
+        Args:
+            tickers: Optional override list of tickers to fetch. If None,
+                     uses self._tickers (the full watchlist).
+        """
+        active_tickers = tickers if tickers is not None else self._tickers
+        if not active_tickers or not self._client:
             return
 
         try:
             # The Massive RESTClient is synchronous — run in a thread to
             # avoid blocking the event loop.
-            snapshots = await asyncio.to_thread(self._fetch_snapshots)
+            snapshots = await asyncio.to_thread(self._fetch_snapshots, active_tickers)
             processed = 0
             for snap in snapshots:
                 try:
@@ -115,18 +122,18 @@ class MassiveDataSource(MarketDataSource):
                         getattr(snap, "ticker", "???"),
                         e,
                     )
-            logger.debug("Massive poll: updated %d/%d tickers", processed, len(self._tickers))
+            logger.debug("Massive poll: updated %d/%d tickers", processed, len(active_tickers))
 
         except Exception as e:
             logger.error("Massive poll failed: %s", e)
             # Don't re-raise — the loop will retry on the next interval.
             # Common failures: 401 (bad key), 429 (rate limit), network errors.
 
-    def _fetch_snapshots(self) -> list:
+    def _fetch_snapshots(self, tickers: list[str]) -> list:
         """Synchronous call to the Massive REST API. Runs in a thread."""
         from massive.rest.models import SnapshotMarketType
 
         return self._client.get_snapshot_all(
             market_type=SnapshotMarketType.STOCKS,
-            tickers=self._tickers,
+            tickers=tickers,
         )

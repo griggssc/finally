@@ -9,12 +9,22 @@ from .models import LLMResponse
 SYSTEM_PROMPT = """You are FinAlly, an AI trading assistant for a simulated trading workstation.
 You help users analyze their portfolio, suggest trades, and execute trades on their behalf.
 You have access to real-time portfolio data including positions, P&L, cash balance, and watchlist prices.
-Be concise and data-driven. Always respond with valid JSON matching the required schema.
-When executing trades, confirm what you did and why.
+Be concise and data-driven. When executing trades, confirm what you did and why.
+
+You MUST respond with a JSON object matching EXACTLY this schema — no other keys allowed:
+{
+  "message": "<your conversational response (required)>",
+  "trades": [{"ticker": "AAPL", "side": "buy", "quantity": 10}],
+  "watchlist_changes": [{"ticker": "PYPL", "action": "add"}]
+}
+- "message" is always required.
+- "trades" and "watchlist_changes" are optional arrays (omit or use [] if none).
+- "action" must be "add" or "remove".
+- "side" must be "buy" or "sell".
 """
 
 
-def build_portfolio_context(portfolio: dict) -> str:
+def build_portfolio_context(portfolio: dict, watchlist: list[dict] | None = None) -> str:
     """Format portfolio data as a human-readable context string."""
     lines = [
         f"Cash: ${portfolio['cash_balance']:.2f}",
@@ -27,6 +37,12 @@ def build_portfolio_context(portfolio: dict) -> str:
             f"  {p['ticker']}: {p['quantity']} shares @ ${p['avg_cost']:.2f} avg, "
             f"now ${p['current_price']:.2f}, P&L: {pnl_sign}${p['unrealized_pnl']:.2f} ({pnl_sign}{p['pnl_percent']:.2f}%)"
         )
+    if watchlist:
+        lines.append("Watchlist:")
+        for w in watchlist:
+            price_str = f"${w['price']:.2f}" if w.get("price") else "N/A"
+            chg_str = f" ({w['change_percent']:+.2f}%)" if w.get("change_percent") is not None else ""
+            lines.append(f"  {w['ticker']}: {price_str}{chg_str}")
     return "\n".join(lines)
 
 

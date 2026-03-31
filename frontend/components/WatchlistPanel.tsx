@@ -8,6 +8,7 @@ interface WatchlistPanelProps {
   prices: Map<string, PriceUpdate>
   selectedTicker: string
   onSelectTicker: (ticker: string) => void
+  refreshKey?: number
 }
 
 const MAX_SPARKLINE_POINTS = 300
@@ -16,6 +17,7 @@ export default function WatchlistPanel({
   prices,
   selectedTicker,
   onSelectTicker,
+  refreshKey,
 }: WatchlistPanelProps) {
   const [watchlist, setWatchlist] = useState<WatchlistItem[]>([])
   const [addInput, setAddInput] = useState('')
@@ -39,7 +41,7 @@ export default function WatchlistPanel({
 
   useEffect(() => {
     fetchWatchlist()
-  }, [fetchWatchlist])
+  }, [fetchWatchlist, refreshKey])
 
   // Update sparkline data and flash state when prices change
   useEffect(() => {

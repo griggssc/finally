@@ -24,7 +24,9 @@ async def chat(body: ChatRequest, request: Request):
 
     # Build portfolio context
     from app.api.portfolio import get_portfolio
+    from app.api.watchlist import get_watchlist
     portfolio = get_portfolio(request)
+    watchlist = get_watchlist(request)
 
     # Load recent conversation history
     with get_db() as conn:
@@ -33,7 +35,7 @@ async def chat(body: ChatRequest, request: Request):
         ).fetchall()
     history = [{"role": r["role"], "content": r["content"]} for r in reversed(rows)]
 
-    portfolio_context = build_portfolio_context(portfolio)
+    portfolio_context = build_portfolio_context(portfolio, watchlist)
 
     # Call LLM (may raise on timeout)
     try:

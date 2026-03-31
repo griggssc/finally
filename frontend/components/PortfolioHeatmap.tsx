@@ -50,13 +50,13 @@ function sliceDice(
 }
 
 function pnlColor(pct: number): string {
-  if (pct > 5) return '#15803d'
-  if (pct > 2) return '#166534'
-  if (pct > 0.5) return '#14532d'
-  if (pct < -5) return '#991b1b'
-  if (pct < -2) return '#7f1d1d'
-  if (pct < -0.5) return '#450a0a'
-  return '#2a2a4a'
+  if (pct > 3) return '#16a34a'
+  if (pct > 1) return '#15803d'
+  if (pct > 0.1) return '#166534'
+  if (pct < -3) return '#dc2626'
+  if (pct < -1) return '#b91c1c'
+  if (pct < -0.1) return '#991b1b'
+  return '#1e3a5f'
 }
 
 const W = 400

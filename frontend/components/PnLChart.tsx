@@ -17,6 +17,11 @@ export default function PnLChart({ history }: PnLChartProps) {
   const seriesRef = useRef<any>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const baselineRef = useRef<any>(null)
+  const historyRef = useRef<HistoryPoint[]>(history)
+
+  useEffect(() => {
+    historyRef.current = history
+  }, [history])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -61,6 +66,25 @@ export default function PnLChart({ history }: PnLChartProps) {
       })
 
       chartRef.current = chart
+
+      // Set data immediately in case history loaded before this import resolved
+      if (historyRef.current.length) {
+        const raw = historyRef.current.map(h => ({
+          time: Math.floor(new Date(h.recorded_at).getTime() / 1000),
+          value: h.total_value,
+        }))
+        const seen = new Map<number, { time: number; value: number }>()
+        for (const d of raw) seen.set(d.time, d)
+        const data = Array.from(seen.values()).sort((a, b) => a.time - b.time)
+        seriesRef.current.setData(data)
+        if (data.length >= 2) {
+          baselineRef.current.setData([
+            { time: data[0].time, value: 10000 },
+            { time: data[data.length - 1].time, value: 10000 },
+          ])
+        }
+        chart.timeScale().fitContent()
+      }
 
       const ro = new ResizeObserver(() => {
         if (containerRef.current && chartRef.current) {

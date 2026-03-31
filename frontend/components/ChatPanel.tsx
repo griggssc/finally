@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import type { ChatMessage } from '@/types'
 
 interface ChatPanelProps {
-  onTradeComplete: () => void
+  onTradeComplete: (hasWatchlistChanges?: boolean) => void
 }
 
 let msgIdCounter = 0
@@ -75,7 +75,7 @@ export default function ChatPanel({ onTradeComplete }: ChatPanelProps) {
       setMessages(prev => [...prev, assistantMsg])
 
       if (data.trades?.length || data.watchlist_changes?.length) {
-        onTradeComplete()
+        onTradeComplete(!!data.watchlist_changes?.length)
       }
     } catch {
       setMessages(prev => [...prev, {

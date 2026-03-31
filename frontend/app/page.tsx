@@ -18,6 +18,7 @@ export default function Home() {
   const [history, setHistory] = useState<HistoryPoint[]>([])
   const [selectedTicker, setSelectedTicker] = useState<string>('AAPL')
   const [chatOpen, setChatOpen] = useState(true)
+  const [watchlistRefreshKey, setWatchlistRefreshKey] = useState(0)
 
   const fetchPortfolio = useCallback(async () => {
     try {
@@ -48,9 +49,10 @@ export default function Home() {
     }
   }, [fetchPortfolio, fetchHistory])
 
-  const handleTradeComplete = () => {
+  const handleTradeComplete = (hasWatchlistChanges = false) => {
     fetchPortfolio()
     fetchHistory()
+    if (hasWatchlistChanges) setWatchlistRefreshKey(k => k + 1)
   }
 
   // Compute live total value using SSE prices
@@ -80,6 +82,7 @@ export default function Home() {
             prices={prices}
             selectedTicker={selectedTicker}
             onSelectTicker={setSelectedTicker}
+            refreshKey={watchlistRefreshKey}
           />
         </div>
 
